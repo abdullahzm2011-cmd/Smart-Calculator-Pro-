@@ -10,12 +10,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
+      - name: Build APK
+        uses: Digreatbrian/buildozer-action@v2
         with:
-          command: buildozer android debug
+          buildozer_version: stable
 
       - uses: actions/upload-artifact@v4
         with:
-          name: APK
+          name: apk
           path: bin/*.apk
