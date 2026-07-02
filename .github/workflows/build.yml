@@ -11,31 +11,57 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
       - name: Install dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            python3-pip \
-            git \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            autoconf \
-            libtool \
-            pkg-config \
-            zlib1g-dev \
-            libncurses5-dev \
-            libncursesw5-dev \
-            cmake \
-            libffi-dev \
-            libssl-dev
+            git zip unzip autoconf libtool pkg-config \
+            zlib1g-dev libncurses5-dev libncursesw5-dev \
+            cmake libffi-dev libssl-dev
 
-      - name: Install Buildozer
+          python -m pip install --upgrade pip
+          pip install cython buildozer
+
+      - name: Install Android SDK
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install buildozer cython
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk
+
+          wget https://dl.google.com/android/repository/commandlinetools-linux-13114758_latest.zip -O cmdline-tools.zip
+          unzip -q cmdline-tools.zip -d cmdline-tools
+          mv cmdline-tools/cmdline-tools cmdline-tools/latest
+
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
+
+      - name: Accept licenses
+        run: |
+          yes | sdkmanager --licenses
+
+      - name: Install SDK packages
+        run: |
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-34" \
+            "build-tools;34.0.0"
 
       - name: Build APK
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT }}
         run: |
           buildozer android debug
 
