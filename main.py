@@ -16,7 +16,7 @@ from kivy.graphics import Color, Rectangle
 Window.size = (520, 750)
 
 # =========================
-# دیکشنری ترجمه‌ها
+# دیکشنری ترجمه‌ها (Fixed broken keys)
 # =========================
 TRANSLATIONS = {
     'fa': {
@@ -142,28 +142,44 @@ class CustomTextInput(TextInput):
 # کلاس صفحه پایه با پشتیبانی از زبان و تم
 # =========================
 class BaseScreen(Screen):
+    bg_color = ListProperty([0.12, 0.16, 0.23, 1])
+    
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.lang = 'fa'  # پیش‌فرض فارسی
-        self.theme = 'dark'  # پیش‌فرض تیره
-    
+        self.lang = 'fa'
+        self.theme = 'dark'
+        
+        # رسم پس‌زمینه صفحه با استفاده از canvas
+        with self.canvas.before:
+            self.bg_color_instr = Color(rgba=self.bg_color)
+            self.bg_rect = Rectangle(pos=self.pos, size=self.size)
+            
+        self.bind(pos=self._update_rect, size=self._update_rect, bg_color=self._update_color)
+
+    def _update_rect(self, instance, value):
+        self.bg_rect.pos = self.pos
+        self.bg_rect.size = self.size
+
+    def _update_color(self, instance, value):
+        self.bg_color_instr.rgba = value
+
     def update_language(self, lang):
         self.lang = lang
         self.update_texts()
-    
+
     def update_theme(self, theme):
         self.theme = theme
         self.apply_theme()
-    
+
     def update_texts(self):
-        pass  # در کلاس‌های فرزند override می‌شود
-    
+        pass
+
     def apply_theme(self):
-        bg_color = (0.12, 0.16, 0.23, 1) if self.theme == 'dark' else (0.95, 0.95, 0.95, 1)
-        text_color = (1, 1, 1, 1) if self.theme == 'dark' else (0, 0, 0, 1)
-        self.background_color = bg_color
-        self.background_color = bg_color
-    
+        if self.theme == 'dark':
+            self.bg_color = (0.12, 0.16, 0.23, 1)
+        else:
+            self.bg_color = (0.95, 0.95, 0.95, 1)
+
     def show_error(self, msg_key):
         app = App.get_running_app()
         msg = app.translate(msg_key)
@@ -174,6 +190,260 @@ class BaseScreen(Screen):
         )
         popup.open()
 
+    def translate(self, key):
+        return TRANSLATIONS[self.lang].get(key, key)
+from kivy.lang import Builder
+
+# =========================
+# تعریف رابط کاربری صفحات با KV Language
+# =========================
+Builder.load_string("""
+<CustomTextInput>:
+    font_size: 14
+    size_hint_y: None
+    height: 40
+    padding: [10, 10]
+    multiline: False
+    background_color: 0.2, 0.23, 0.29, 1
+    foreground_color: 1, 1, 1, 1
+    cursor_color: 1, 1, 0, 1
+    on_focus: app.set_active_entry(self) if self.focus else None
+
+<BaseScreen>:
+    canvas.before:
+        Color:
+            rgba: self.bg_color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<GeometryScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+        Label:
+            id: title
+            font_size: 20
+            bold: True
+            size_hint_y: None
+            height: 40
+            color: 1, 1, 1, 1
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: 100
+            spacing: 5
+            Label:
+                id: label_n
+                text: 'n or height:'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: n_entry
+            Label:
+                id: label_val
+                text: 'value:'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: val_entry
+        GridLayout:
+            cols: 2
+            spacing: 5
+            Button:
+                id: btn_diagonals
+                text: 'Diagonals'
+                on_press: root.diagonals()
+            Button:
+                id: btn_angles
+                text: 'Angles'
+                on_press: root.angles()
+            Button:
+                id: btn_perimeter
+                text: 'Perimeter'
+                on_press: root.perimeter()
+            Button:
+                id: btn_area
+                text: 'Triangle Area'
+                on_press: root.area()
+            Button:
+                id: btn_volume
+                text: 'Sphere Volume'
+                on_press: root.volume()
+            Button:
+                id: btn_lateral
+                text: 'Cylinder Lateral'
+                on_press: root.lateral()
+            Button:
+                id: btn_circle_area
+                text: 'Circle Area'
+                on_press: root.circle_area()
+            Button:
+                id: btn_circumference
+                text: 'Circumference'
+                on_press: root.circle_perimeter()
+
+<VectorsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+        Label:
+            id: title
+            font_size: 20
+            bold: True
+            size_hint_y: None
+            height: 40
+            color: 1, 1, 1, 1
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: 100
+            spacing: 5
+            Label:
+                id: label_v1
+                text: 'Vector 1'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: v1
+            Label:
+                id: label_v2
+                text: 'Vector 2'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: v2
+        GridLayout:
+            cols: 2
+            spacing: 5
+            Button:
+                id: btn_add
+                text: 'Add'
+                on_press: root.add_vectors()
+            Button:
+                id: btn_distance
+                text: 'Distance'
+                on_press: root.distance_vectors()
+            Button:
+                id: btn_dot
+                text: 'Dot Product'
+                on_press: root.dot_product()
+            Button:
+                id: btn_length
+                text: 'Length'
+                on_press: root.vector_length()
+
+<ProportionScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+        Label:
+            id: title
+            font_size: 20
+            bold: True
+            size_hint_y: None
+            height: 40
+            color: 1, 1, 1, 1
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: 50
+            spacing: 5
+            Label:
+                id: label_input
+                text: 'Input'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: prop_entry
+        GridLayout:
+            cols: 2
+            spacing: 5
+            Button:
+                id: btn_table
+                text: 'Table'
+                on_press: root.table()
+            Button:
+                id: btn_percent
+                text: 'Percent'
+                on_press: root.percent_p()
+
+<AlgebraScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+        Label:
+            id: title
+            font_size: 20
+            bold: True
+            size_hint_y: None
+            height: 40
+            color: 1, 1, 1, 1
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: 50
+            spacing: 5
+            Label:
+                id: label_input
+                text: 'Input'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: algebra_entry
+        GridLayout:
+            cols: 2
+            spacing: 5
+            Button:
+                id: btn_linear
+                text: 'Linear'
+                on_press: root.solve_linear()
+            Button:
+                id: btn_quadratic
+                text: 'Quadratic'
+                on_press: root.quadratic()
+
+<StatisticsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: 10
+        spacing: 10
+        Label:
+            id: title
+            font_size: 20
+            bold: True
+            size_hint_y: None
+            height: 40
+            color: 1, 1, 1, 1
+        GridLayout:
+            cols: 2
+            size_hint_y: None
+            height: 50
+            spacing: 5
+            Label:
+                id: label_input
+                text: 'Input'
+                color: 1, 1, 1, 1
+            CustomTextInput:
+                id: stats_entry
+        GridLayout:
+            cols: 2
+            spacing: 5
+            Button:
+                id: btn_avg
+                text: 'Average'
+                on_press: root.average()
+            Button:
+                id: btn_max
+                text: 'Max'
+                on_press: root.maximum()
+            Button:
+                id: btn_min
+                text: 'Min'
+                on_press: root.minimum()
+            Button:
+                id: btn_prob
+                text: 'Probability'
+                on_press: root.probability()
+""")
 # =========================
 # صفحه هندسه
 # =========================
@@ -191,7 +461,7 @@ class GeometryScreen(BaseScreen):
         self.ids.btn_lateral.text = t['cylinder_lateral']
         self.ids.btn_circle_area.text = t['circle_area']
         self.ids.btn_circumference.text = t['circle_circumference']
-    
+
     def diagonals(self):
         try:
             n = int(self.ids.n_entry.text)
@@ -200,7 +470,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('diagonals')}: {result}", formula)
         except:
             self.show_error('enter_n')
-    
+
     def angles(self):
         try:
             n = int(self.ids.n_entry.text)
@@ -210,7 +480,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"Sum = {total} | Each = {each}", formula)
         except:
             self.show_error('enter_n')
-    
+
     def perimeter(self):
         try:
             n = int(self.ids.n_entry.text)
@@ -220,7 +490,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('perimeter')} = {result}", formula)
         except:
             self.show_error('enter_n_side')
-    
+
     def area(self):
         try:
             b = float(self.ids.val_entry.text)
@@ -230,7 +500,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('triangle_area')} = {result}", formula)
         except:
             self.show_error('enter_base_height')
-    
+
     def volume(self):
         try:
             r = float(self.ids.val_entry.text)
@@ -239,7 +509,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('sphere_volume')} = {result}", formula)
         except:
             self.show_error('enter_radius')
-    
+
     def lateral(self):
         try:
             r = float(self.ids.val_entry.text)
@@ -249,7 +519,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('cylinder_lateral')} = {result}", formula)
         except:
             self.show_error('enter_radius_height')
-    
+
     def circle_area(self):
         try:
             r = float(self.ids.val_entry.text)
@@ -258,7 +528,7 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('circle_area')} = {result}", formula)
         except:
             self.show_error('enter_radius')
-    
+
     def circle_perimeter(self):
         try:
             r = float(self.ids.val_entry.text)
@@ -267,9 +537,6 @@ class GeometryScreen(BaseScreen):
             App.get_running_app().set_result(f"{self.translate('circle_circumference')} = {result}", formula)
         except:
             self.show_error('enter_radius')
-    
-    def translate(self, key):
-        return TRANSLATIONS[self.lang][key]
 
 # =========================
 # صفحه بردارها
@@ -284,7 +551,7 @@ class VectorsScreen(BaseScreen):
         self.ids.btn_distance.text = t['distance']
         self.ids.btn_dot.text = t['dot_product']
         self.ids.btn_length.text = t['vector_length']
-    
+
     def add_vectors(self):
         try:
             x1, y1 = map(float, self.ids.v1.text.split())
@@ -294,7 +561,7 @@ class VectorsScreen(BaseScreen):
             App.get_running_app().set_result(f"Sum = ({result[0]}, {result[1]})", formula)
         except:
             self.show_error('use_x_y')
-    
+
     def distance_vectors(self):
         try:
             x1, y1 = map(float, self.ids.v1.text.split())
@@ -304,7 +571,7 @@ class VectorsScreen(BaseScreen):
             App.get_running_app().set_result(f"Distance = {d}", formula)
         except:
             self.show_error('use_x_y')
-    
+
     def dot_product(self):
         try:
             x1, y1 = map(float, self.ids.v1.text.split())
@@ -314,7 +581,7 @@ class VectorsScreen(BaseScreen):
             App.get_running_app().set_result(f"Dot Product = {result}", formula)
         except:
             self.show_error('use_x_y')
-    
+
     def vector_length(self):
         try:
             x, y = map(float, self.ids.v1.text.split())
@@ -323,9 +590,6 @@ class VectorsScreen(BaseScreen):
             App.get_running_app().set_result(f"Length = {result}", formula)
         except:
             self.show_error('use_x_y')
-    
-    def translate(self, key):
-        return TRANSLATIONS[self.lang][key]
 
 # =========================
 # صفحه تناسب
@@ -337,7 +601,7 @@ class ProportionScreen(BaseScreen):
         self.ids.label_input.text = t['proportion_input']
         self.ids.btn_table.text = t['table_proportion']
         self.ids.btn_percent.text = t['percent_of_total']
-    
+
     def table(self):
         try:
             a, b, c = map(float, self.ids.prop_entry.text.split())
@@ -346,7 +610,7 @@ class ProportionScreen(BaseScreen):
             App.get_running_app().set_result(f"x = {result}", formula)
         except:
             self.show_error('use_a_b_c')
-    
+
     def percent_p(self):
         try:
             p, t = map(float, self.ids.prop_entry.text.split())
@@ -355,9 +619,6 @@ class ProportionScreen(BaseScreen):
             App.get_running_app().set_result(f"Percent = {result}%", formula)
         except:
             self.show_error('use_good_total')
-    
-    def translate(self, key):
-        return TRANSLATIONS[self.lang][key]
 
 # =========================
 # صفحه جبر
@@ -369,7 +630,7 @@ class AlgebraScreen(BaseScreen):
         self.ids.label_input.text = t['algebra_input']
         self.ids.btn_linear.text = t['solve_linear']
         self.ids.btn_quadratic.text = t['quadratic']
-    
+
     def solve_linear(self):
         try:
             a, b, c = map(float, self.ids.algebra_entry.text.split())
@@ -378,7 +639,7 @@ class AlgebraScreen(BaseScreen):
             App.get_running_app().set_result(f"x = {x}", formula)
         except:
             self.show_error('use_a_b_c')
-    
+
     def quadratic(self):
         try:
             a, b, c = map(float, self.ids.algebra_entry.text.split())
@@ -392,9 +653,6 @@ class AlgebraScreen(BaseScreen):
             App.get_running_app().set_result(f"x1 = {x1} | x2 = {x2}", formula)
         except:
             self.show_error('use_a_b_c')
-    
-    def translate(self, key):
-        return TRANSLATIONS[self.lang][key]
 
 # =========================
 # صفحه آمار
@@ -408,7 +666,7 @@ class StatisticsScreen(BaseScreen):
         self.ids.btn_max.text = t['maximum']
         self.ids.btn_min.text = t['minimum']
         self.ids.btn_prob.text = t['probability']
-    
+
     def average(self):
         try:
             nums = list(map(float, self.ids.stats_entry.text.split()))
@@ -417,7 +675,7 @@ class StatisticsScreen(BaseScreen):
             App.get_running_app().set_result(f"Average = {result}", formula)
         except:
             self.show_error('enter_numbers')
-    
+
     def maximum(self):
         try:
             nums = list(map(float, self.ids.stats_entry.text.split()))
@@ -426,7 +684,7 @@ class StatisticsScreen(BaseScreen):
             App.get_running_app().set_result(f"Max = {result}", formula)
         except:
             self.show_error('enter_numbers')
-    
+
     def minimum(self):
         try:
             nums = list(map(float, self.ids.stats_entry.text.split()))
@@ -435,7 +693,7 @@ class StatisticsScreen(BaseScreen):
             App.get_running_app().set_result(f"Min = {result}", formula)
         except:
             self.show_error('enter_numbers')
-    
+
     def probability(self):
         try:
             g, t = map(float, self.ids.stats_entry.text.split())
@@ -444,11 +702,7 @@ class StatisticsScreen(BaseScreen):
             App.get_running_app().set_result(f"Probability = {result}", formula)
         except:
             self.show_error('use_good_total')
-    
-    def translate(self, key):
-        return TRANSLATIONS[self.lang][key]
-
-# =========================
+            # =========================
 # کلاس اصلی اپلیکیشن
 # =========================
 class APZApp(App):
@@ -458,23 +712,25 @@ class APZApp(App):
     active_entry = None
     current_lang = 'fa'
     current_theme = 'dark'
-    
+
     def build(self):
         self.sm = ScreenManager()
-        
         # اضافه کردن صفحات
         self.sm.add_widget(GeometryScreen(name='geometry'))
         self.sm.add_widget(VectorsScreen(name='vectors'))
         self.sm.add_widget(ProportionScreen(name='proportion'))
         self.sm.add_widget(AlgebraScreen(name='algebra'))
         self.sm.add_widget(StatisticsScreen(name='statistics'))
-        
+
         # ساخت UI اصلی
         root = BoxLayout(orientation='vertical')
-        
+
         # نوار ابزار بالا (زبان و تم)
         toolbar = BoxLayout(size_hint_y=None, height=50, spacing=5, padding=5)
-        toolbar.background_color = (0.12, 0.16, 0.23, 1)
+        with toolbar.canvas.before:
+            Color(rgba=(0.12, 0.16, 0.23, 1))
+            self.toolbar_rect = Rectangle(pos=toolbar.pos, size=toolbar.size)
+        toolbar.bind(pos=self._update_toolbar_rect, size=self._update_toolbar_rect)
         
         # دکمه زبان
         self.lang_btn = Button(
@@ -486,7 +742,7 @@ class APZApp(App):
         )
         self.lang_btn.bind(on_press=self.toggle_language)
         toolbar.add_widget(self.lang_btn)
-        
+
         # دکمه تم
         self.theme_btn = Button(
             text='🌙 تیره',
@@ -497,22 +753,23 @@ class APZApp(App):
         )
         self.theme_btn.bind(on_press=self.toggle_theme)
         toolbar.add_widget(self.theme_btn)
-        
+
         # عنوان
-        title_label = Label(
+        self.title_label = Label(
             text=TRANSLATIONS['fa']['app_title'],
             font_size=16,
             bold=True,
             color=(1, 1, 1, 1)
         )
-        toolbar.add_widget(title_label)
-        self.title_label = title_label
-        
+        toolbar.add_widget(self.title_label)
         root.add_widget(toolbar)
-        
+
         # نوار نتیجه (نتیجه و فرمول)
         result_box = BoxLayout(orientation='vertical', size_hint_y=None, height=100, padding=5)
-        result_box.background_color = (0.08, 0.12, 0.18, 1)
+        with result_box.canvas.before:
+            Color(rgba=(0.08, 0.12, 0.18, 1))
+            self.result_rect = Rectangle(pos=result_box.pos, size=result_box.size)
+        result_box.bind(pos=self._update_result_rect, size=self._update_result_rect)
         
         # نتیجه
         self.result_label = Label(
@@ -523,10 +780,11 @@ class APZApp(App):
             size_hint_y=None,
             height=40,
             halign='center',
-            valign='middle'
+            valign='middle',
+            text_size=(Window.width, 40)
         )
         result_box.add_widget(self.result_label)
-        
+
         # فرمول
         self.formula_label = Label(
             text=self.formula_text,
@@ -539,15 +797,13 @@ class APZApp(App):
             text_size=(Window.width, 40)
         )
         result_box.add_widget(self.formula_label)
-        
         root.add_widget(result_box)
-        
+
         # ScreenManager
         root.add_widget(self.sm)
-        
+
         # ناوبری
         nav = BoxLayout(size_hint_y=None, height=60, spacing=20, padding=10)
-        
         prev_btn = Button(
             text=TRANSLATIONS['fa']['previous'],
             background_color=(0.49, 0.23, 0.93, 1),
@@ -565,38 +821,46 @@ class APZApp(App):
         nav.add_widget(prev_btn)
         nav.add_widget(next_btn)
         root.add_widget(nav)
-        
-        # کیبورد مجازی
+
+        # کیبورد مجازی (Fixed to be a proper 4x4 grid)
         keypad = GridLayout(cols=4, spacing=2, size_hint_y=None, height=200, padding=5)
-        
         buttons = [
             '7', '8', '9', '-',
             '4', '5', '6', '.',
-            '1', '2', '3', ' ',
-            '0'
+            '1', '2', '3', '⌫',
+            '0', 'C', '', ''
         ]
-        
         for btn_text in buttons:
+            if btn_text == '':
+                keypad.add_widget(Widget())
+                continue
             btn = Button(text=btn_text)
-            btn.bind(on_press=lambda x, t=btn_text: self.insert_num(t))
+            if btn_text == 'C':
+                btn.background_color = (0.86, 0.15, 0.15, 1)
+                btn.color = (1, 1, 1, 1)
+                btn.bind(on_press=self.clear_entry)
+            elif btn_text == '⌫':
+                btn.background_color = (0.86, 0.15, 0.15, 1)
+                btn.color = (1, 1, 1, 1)
+                btn.bind(on_press=self.backspace)
+            else:
+                btn.bind(on_press=lambda x, t=btn_text: self.insert_num(t))
             keypad.add_widget(btn)
-        
-        # دکمه‌های ویژه
-        backspace_btn = Button(text='⌫', background_color=(0.86, 0.15, 0.15, 1), color=(1, 1, 1, 1))
-        backspace_btn.bind(on_press=self.backspace)
-        keypad.add_widget(backspace_btn)
-        
-        clear_btn = Button(text='C', background_color=(0.86, 0.15, 0.15, 1), color=(1, 1, 1, 1))
-        clear_btn.bind(on_press=self.clear_entry)
-        keypad.add_widget(clear_btn)
-        
+            
         root.add_widget(keypad)
-        
+
         # تنظیم پیش‌فرض
         self.update_all_screens()
-        
         return root
-    
+
+    def _update_toolbar_rect(self, instance, value):
+        self.toolbar_rect.pos = instance.pos
+        self.toolbar_rect.size = instance.size
+
+    def _update_result_rect(self, instance, value):
+        self.result_rect.pos = instance.pos
+        self.result_rect.size = instance.size
+
     def toggle_language(self, instance):
         if self.current_lang == 'fa':
             self.current_lang = 'en'
@@ -606,10 +870,9 @@ class APZApp(App):
             self.current_lang = 'fa'
             self.lang_btn.text = '🇮🇷 فارسی'
             self.title_label.text = TRANSLATIONS['fa']['app_title']
-        
         self.update_all_screens()
         self.result_label.text = TRANSLATIONS[self.current_lang]['ready']
-    
+
     def toggle_theme(self, instance):
         if self.current_theme == 'dark':
             self.current_theme = 'light'
@@ -619,51 +882,46 @@ class APZApp(App):
             self.current_theme = 'dark'
             self.theme_btn.text = '🌙 تیره'
             self.apply_theme_to_all('dark')
-    
+
     def apply_theme_to_all(self, theme):
-        bg_color = (0.95, 0.95, 0.95, 1) if theme == 'light' else (0.12, 0.16, 0.23, 1)
         text_color = (0, 0, 0, 1) if theme == 'light' else (1, 1, 1, 1)
         
-        # اعمال به همه صفحات
+        # اعمال به همه صفحات (از طریق متد update_theme که در BaseScreen تعریف شده)
         for screen in self.sm.screens:
-            screen.background_color = bg_color
-            for child in screen.walk():
-                if hasattr(child, 'background_color'):
-                    if theme == 'light':
-                        child.background_color = (0.9, 0.9, 0.9, 1)
-                    else:
-                        child.background_color = (0.2, 0.23, 0.29, 1)
-                if hasattr(child, 'color'):
-                    child.color = text_color
-    
+            screen.update_theme(theme)
+            
+        self.title_label.color = text_color
+        self.result_label.color = (1, 1, 0, 1) if theme == 'dark' else (0.8, 0.4, 0, 1)
+        self.formula_label.color = (0.5, 0.8, 1, 1) if theme == 'dark' else (0, 0.3, 0.8, 1)
+
     def update_all_screens(self):
         for screen in self.sm.screens:
             if hasattr(screen, 'update_language'):
                 screen.update_language(self.current_lang)
-    
+
     def insert_num(self, num):
         if self.active_entry:
             self.active_entry.insert_text(num)
-    
+
     def backspace(self, instance):
         if self.active_entry:
             text = self.active_entry.text
             if len(text) > 0:
                 self.active_entry.text = text[:-1]
-    
+
     def clear_entry(self, instance):
         if self.active_entry:
             self.active_entry.text = ''
-    
+
     def set_active_entry(self, entry):
         self.active_entry = entry
-    
+
     def set_result(self, result, formula=""):
         self.result_text = result
         self.formula_text = formula
         self.result_label.text = result
         self.formula_label.text = f"📐 {formula}" if formula else ""
-    
+
     def show_error(self, msg_key):
         msg = TRANSLATIONS[self.current_lang].get(msg_key, msg_key)
         popup = Popup(
@@ -672,17 +930,17 @@ class APZApp(App):
             size_hint=(0.8, 0.4)
         )
         popup.open()
-    
+
     def next_screen(self, instance):
         if self.current_screen < 4:
             self.current_screen += 1
             self.sm.current = self.sm.screen_names[self.current_screen]
-    
+
     def prev_screen(self, instance):
         if self.current_screen > 0:
             self.current_screen -= 1
             self.sm.current = self.sm.screen_names[self.current_screen]
-    
+
     def translate(self, key):
         return TRANSLATIONS[self.current_lang].get(key, key)
 
@@ -690,4 +948,4 @@ class APZApp(App):
 # اجرای برنامه
 # =========================
 if __name__ == '__main__':
-    APZApp().run()
+    APZApp().run()        
