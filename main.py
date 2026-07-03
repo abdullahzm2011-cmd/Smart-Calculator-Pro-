@@ -12,8 +12,11 @@ from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle
 
-# تنظیم سایز پنجره
-Window.size = (520, 750)
+# تنظیم 
+from kivy.utils import platform
+
+if platform != "android":
+    Window.size = (520, 750)
 
 # =========================
 # دیکشنری ترجمه‌ها (Fixed broken keys)
