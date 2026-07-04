@@ -11,196 +11,34 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.uix.popup import Popup
 from kivy.uix.widget import Widget
 from kivy.graphics import Color, Rectangle
-
-# تنظیم 
-from kivy.utils import platform
-
-if platform != "android":
-    Window.size = (520, 750)
-
-# =========================
-# دیکشنری ترجمه‌ها (Fixed broken keys)
-# =========================
-TRANSLATIONS = {
-    'fa': {
-        'app_title': 'ماشین حساب حرفه‌ای',
-        'ready': 'آماده',
-        'error': 'خطا',
-        'geometry': 'هندسه',
-        'vectors': 'بردارها',
-        'proportion': 'تناسب',
-        'algebra': 'جبر',
-        'statistics': 'آمار',
-        'n_or_height': 'n یا ارتفاع:',
-        'value': 'مقدار (ضلع/قاعده/شعاع):',
-        'diagonals': 'قطرها',
-        'angles': 'زاویه‌ها',
-        'perimeter': 'محیط',
-        'triangle_area': 'مساحت مثلث',
-        'sphere_volume': 'حجم کره',
-        'cylinder_lateral': 'مساحت جانبی استوانه',
-        'circle_area': 'مساحت دایره',
-        'circle_circumference': 'محیط دایره',
-        'vector1': 'بردار ۱ (x y)',
-        'vector2': 'بردار ۲ (x y)',
-        'add_vectors': 'جمع بردارها',
-        'distance': 'فاصله',
-        'dot_product': 'ضرب داخلی',
-        'vector_length': 'اندازه بردار',
-        'proportion_input': 'a b c یا جزء کل',
-        'table_proportion': 'تناسب جدولی',
-        'percent_of_total': 'درصد از کل',
-        'algebra_input': 'a b c را وارد کنید',
-        'solve_linear': 'حل ax+b=c',
-        'quadratic': 'معادله درجه ۲',
-        'stats_input': 'اعداد یا خوب کل',
-        'average': 'میانگین',
-        'maximum': 'بیشینه',
-        'minimum': 'کمینه',
-        'probability': 'احتمال',
-        'previous': '➡ قبلی',
-        'next': 'بعدی ⬅',
-        'formula': 'فرمول:',
-        'result': 'نتیجه:',
-        'enter_n': 'n را وارد کنید',
-        'enter_n_side': 'n و ضلع را وارد کنید',
-        'enter_base_height': 'قاعده و ارتفاع را وارد کنید',
-        'enter_radius': 'شعاع را وارد کنید',
-        'enter_radius_height': 'شعاع و ارتفاع را وارد کنید',
-        'use_x_y': 'از فرمت x y استفاده کنید',
-        'use_a_b_c': 'از فرمت a b c استفاده کنید',
-        'enter_numbers': 'اعداد را وارد کنید',
-        'use_good_total': 'از فرمت خوب کل استفاده کنید',
-        'no_real_roots': 'ریشه حقیقی ندارد'
-    },
-    'en': {
-        'app_title': 'Smart Calculator Pro',
-        'ready': 'Ready',
-        'error': 'Error',
-        'geometry': 'Geometry',
-        'vectors': 'Vectors',
-        'proportion': 'Proportion',
-        'algebra': 'Algebra',
-        'statistics': 'Statistics',
-        'n_or_height': 'n or height:',
-        'value': 'value (side/base/radius):',
-        'diagonals': 'Diagonals',
-        'angles': 'Angles',
-        'perimeter': 'Perimeter',
-        'triangle_area': 'Triangle Area',
-        'sphere_volume': 'Sphere Volume',
-        'cylinder_lateral': 'Cylinder Lateral',
-        'circle_area': 'Circle Area',
-        'circle_circumference': 'Circle Circumference',
-        'vector1': 'Vector 1 (x y)',
-        'vector2': 'Vector 2 (x y)',
-        'add_vectors': 'Add Vectors',
-        'distance': 'Distance',
-        'dot_product': 'Dot Product',
-        'vector_length': 'Vector Length',
-        'proportion_input': 'Enter a b c or part total',
-        'table_proportion': 'Table Proportion',
-        'percent_of_total': 'Percent Of Total',
-        'algebra_input': 'Enter a b c',
-        'solve_linear': 'Solve ax+b=c',
-        'quadratic': 'Quadratic Equation',
-        'stats_input': 'Enter numbers or good total',
-        'average': 'Average',
-        'maximum': 'Maximum',
-        'minimum': 'Minimum',
-        'probability': 'Probability',
-        'previous': '⬅ Previous',
-        'next': 'Next ➡',
-        'formula': 'Formula:',
-        'result': 'Result:',
-        'enter_n': 'Enter n',
-        'enter_n_side': 'Enter n and side',
-        'enter_base_height': 'Enter base and height',
-        'enter_radius': 'Enter radius',
-        'enter_radius_height': 'Enter radius and height',
-        'use_x_y': 'Use: x y',
-        'use_a_b_c': 'Use: a b c',
-        'enter_numbers': 'Enter numbers',
-        'use_good_total': 'Use: good total',
-        'no_real_roots': 'No Real Roots'
-    }
-}
-
-# =========================
-# کلاس ورودی سفارشی
-# =========================
-class CustomTextInput(TextInput):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.font_size = 14
-        self.size_hint_y = None
-        self.height = 40
-        self.padding = [10, 10]
-        self.multiline = False
-        self.background_color = (0.2, 0.23, 0.29, 1)
-        self.foreground_color = (1, 1, 1, 1)
-        self.cursor_color = (1, 1, 0, 1)
-
-# =========================
-# کلاس صفحه پایه با پشتیبانی از زبان و تم
-# =========================
-class BaseScreen(Screen):
-    bg_color = ListProperty([0.12, 0.16, 0.23, 1])
-    
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.lang = 'fa'
-        self.theme = 'dark'
-        
-        # رسم پس‌زمینه صفحه با استفاده از canvas
-        with self.canvas.before:
-            self.bg_color_instr = Color(rgba=self.bg_color)
-            self.bg_rect = Rectangle(pos=self.pos, size=self.size)
-            
-        self.bind(pos=self._update_rect, size=self._update_rect, bg_color=self._update_color)
-
-    def _update_rect(self, instance, value):
-        self.bg_rect.pos = self.pos
-        self.bg_rect.size = self.size
-
-    def _update_color(self, instance, value):
-        self.bg_color_instr.rgba = value
-
-    def update_language(self, lang):
-        self.lang = lang
-        self.update_texts()
-
-    def update_theme(self, theme):
-        self.theme = theme
-        self.apply_theme()
-
-    def update_texts(self):
-        pass
-
-    def apply_theme(self):
-        if self.theme == 'dark':
-            self.bg_color = (0.12, 0.16, 0.23, 1)
-        else:
-            self.bg_color = (0.95, 0.95, 0.95, 1)
-
-    def show_error(self, msg_key):
-        app = App.get_running_app()
-        msg = app.translate(msg_key)
-        popup = Popup(
-            title=app.translate('error'),
-            content=Label(text=msg),
-            size_hint=(0.8, 0.4)
-        )
-        popup.open()
-
-    def translate(self, key):
-        return TRANSLATIONS[self.lang].get(key, key)
 from kivy.lang import Builder
+# ✅ NEW: Import LabelBase for font registration
+from kivy.core.text import LabelBase
+
+# تنظیم سایز پنجره
+Window.size = (520, 750)
+
+# ✅ NEW: Register the Persian font globally
+# The font file 'Vazirmatn-Regular.ttf' must be placed in the same directory as this script.
+LabelBase.register(
+    name='Vazirmatn',
+    fn_regular='Vazirmatn-Regular.ttf'
+)
 
 # =========================
-# تعریف رابط کاربری صفحات با KV Language
+# ✅ NEW: Global KV rules to apply Vazirmatn to ALL text widgets
+# These rules ensure every Label, Button, and TextInput in the app uses the Persian font.
 # =========================
 Builder.load_string("""
+<Label>:
+    font_name: 'Vazirmatn'
+
+<Button>:
+    font_name: 'Vazirmatn'
+
+<TextInput>:
+    font_name: 'Vazirmatn'
+
 <CustomTextInput>:
     font_size: 14
     size_hint_y: None
@@ -706,6 +544,82 @@ class StatisticsScreen(BaseScreen):
         except:
             self.show_error('use_good_total')
             # =========================
+# صفحه ماشین حساب استاندارد (جدید)
+# =========================
+class CalculatorScreen(BaseScreen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        layout = BoxLayout(orientation='vertical', padding=10, spacing=10)
+        
+        # عنوان صفحه
+        self.title_label = Label(
+            text=TRANSLATIONS[self.lang].get('calculator', 'Calculator'),
+            font_size=20, bold=True, size_hint_y=None, height=40,
+            color=(1, 1, 1, 1)
+        )
+        layout.add_widget(self.title_label)
+        
+        # صفحه نمایش ماشین حساب
+        self.calc_display = TextInput(
+            text='', font_size=24, multiline=False,
+            size_hint_y=None, height=60,
+            background_color=(0.1, 0.1, 0.1, 1),
+            foreground_color=(1, 1, 1, 1),
+            halign='right', valign='middle'
+        )
+        layout.add_widget(self.calc_display)
+        
+        # کیبورد اختصاصی ماشین حساب
+        keypad = GridLayout(cols=4, spacing=5, size_hint_y=1)
+        btns = [
+            'C', '⌫', '%', '/',
+            '7', '8', '9', '*',
+            '4', '5', '6', '-',
+            '1', '2', '3', '+',
+            '(', ')', '.', '=',
+            '0', '', '', ''
+        ]
+        for b in btns:
+            if b == '':
+                keypad.add_widget(Widget())
+                continue
+            btn = Button(text=b, font_size=20)
+            btn.bind(on_press=lambda instance, val=b: self.on_calc_button(val))
+            keypad.add_widget(btn)
+            
+        layout.add_widget(keypad)
+        self.add_widget(layout)
+
+    def update_texts(self):
+        if hasattr(self, 'title_label'):
+            self.title_label.text = TRANSLATIONS[self.lang].get('calculator', 'Calculator')
+
+    def on_calc_button(self, val):
+        if val == 'C':
+            self.calc_display.text = ''
+        elif val == '⌫':
+            self.calc_display.text = self.calc_display.text[:-1]
+        elif val == '=':
+            self.calculate()
+        else:
+            self.calc_display.text += val
+
+    def calculate(self):
+        expr = self.calc_display.text
+        try:
+            # بررسی امنیت عبارت (فقط اعداد و عملگرهای مجاز)
+            allowed = set("0123456789+-*/.() ")
+            if not all(c in allowed for c in expr):
+                raise ValueError("Invalid characters")
+            
+            # ارزیابی امن عبارت
+            result = eval(expr, {"__builtins__": None}, {})
+            self.calc_display.text = str(result)
+            App.get_running_app().set_result(str(result), expr)
+        except Exception:
+            self.calc_display.text = "Error"
+
+# =========================
 # کلاس اصلی اپلیکیشن
 # =========================
 class APZApp(App):
@@ -718,12 +632,13 @@ class APZApp(App):
 
     def build(self):
         self.sm = ScreenManager()
-        # اضافه کردن صفحات
+        # اضافه کردن صفحات (شامل صفحه جدید ماشین حساب)
         self.sm.add_widget(GeometryScreen(name='geometry'))
         self.sm.add_widget(VectorsScreen(name='vectors'))
         self.sm.add_widget(ProportionScreen(name='proportion'))
         self.sm.add_widget(AlgebraScreen(name='algebra'))
         self.sm.add_widget(StatisticsScreen(name='statistics'))
+        self.sm.add_widget(CalculatorScreen(name='calculator')) # ✅ صفحه جدید
 
         # ساخت UI اصلی
         root = BoxLayout(orientation='vertical')
@@ -735,68 +650,43 @@ class APZApp(App):
             self.toolbar_rect = Rectangle(pos=toolbar.pos, size=toolbar.size)
         toolbar.bind(pos=self._update_toolbar_rect, size=self._update_toolbar_rect)
         
-        # دکمه زبان
         self.lang_btn = Button(
-            text='🇮🇷 فارسی',
-            size_hint_x=None,
-            width=100,
-            background_color=(0.2, 0.23, 0.29, 1),
-            color=(1, 1, 1, 1)
+            text='🇮🇷 فارسی', size_hint_x=None, width=100,
+            background_color=(0.2, 0.23, 0.29, 1), color=(1, 1, 1, 1)
         )
         self.lang_btn.bind(on_press=self.toggle_language)
         toolbar.add_widget(self.lang_btn)
 
-        # دکمه تم
         self.theme_btn = Button(
-            text='🌙 تیره',
-            size_hint_x=None,
-            width=100,
-            background_color=(0.2, 0.23, 0.29, 1),
-            color=(1, 1, 1, 1)
+            text='🌙 تیره', size_hint_x=None, width=100,
+            background_color=(0.2, 0.23, 0.29, 1), color=(1, 1, 1, 1)
         )
         self.theme_btn.bind(on_press=self.toggle_theme)
         toolbar.add_widget(self.theme_btn)
 
-        # عنوان
         self.title_label = Label(
-            text=TRANSLATIONS['fa']['app_title'],
-            font_size=16,
-            bold=True,
-            color=(1, 1, 1, 1)
+            text=TRANSLATIONS['fa']['app_title'], font_size=16, bold=True, color=(1, 1, 1, 1)
         )
         toolbar.add_widget(self.title_label)
         root.add_widget(toolbar)
 
-        # نوار نتیجه (نتیجه و فرمول)
+        # نوار نتیجه
         result_box = BoxLayout(orientation='vertical', size_hint_y=None, height=100, padding=5)
         with result_box.canvas.before:
             Color(rgba=(0.08, 0.12, 0.18, 1))
             self.result_rect = Rectangle(pos=result_box.pos, size=result_box.size)
         result_box.bind(pos=self._update_result_rect, size=self._update_result_rect)
         
-        # نتیجه
         self.result_label = Label(
-            text=self.result_text,
-            font_size=16,
-            bold=True,
-            color=(1, 1, 0, 1),
-            size_hint_y=None,
-            height=40,
-            halign='center',
-            valign='middle',
+            text=self.result_text, font_size=16, bold=True, color=(1, 1, 0, 1),
+            size_hint_y=None, height=40, halign='center', valign='middle',
             text_size=(Window.width, 40)
         )
         result_box.add_widget(self.result_label)
 
-        # فرمول
         self.formula_label = Label(
-            text=self.formula_text,
-            font_size=12,
-            color=(0.5, 0.8, 1, 1),
-            size_hint_y=None,
-            height=40,
-            halign='center',
-            valign='middle',
+            text=self.formula_text, font_size=12, color=(0.5, 0.8, 1, 1),
+            size_hint_y=None, height=40, halign='center', valign='middle',
             text_size=(Window.width, 40)
         )
         result_box.add_widget(self.formula_label)
@@ -809,15 +699,13 @@ class APZApp(App):
         nav = BoxLayout(size_hint_y=None, height=60, spacing=20, padding=10)
         prev_btn = Button(
             text=TRANSLATIONS['fa']['previous'],
-            background_color=(0.49, 0.23, 0.93, 1),
-            color=(1, 1, 1, 1)
+            background_color=(0.49, 0.23, 0.93, 1), color=(1, 1, 1, 1)
         )
         prev_btn.bind(on_press=self.prev_screen)
         
         next_btn = Button(
             text=TRANSLATIONS['fa']['next'],
-            background_color=(0.49, 0.23, 0.93, 1),
-            color=(1, 1, 1, 1)
+            background_color=(0.49, 0.23, 0.93, 1), color=(1, 1, 1, 1)
         )
         next_btn.bind(on_press=self.next_screen)
         
@@ -825,14 +713,9 @@ class APZApp(App):
         nav.add_widget(next_btn)
         root.add_widget(nav)
 
-        # کیبورد مجازی (Fixed to be a proper 4x4 grid)
+        # کیبورد مجازی عمومی (برای صفحات دیگر)
         keypad = GridLayout(cols=4, spacing=2, size_hint_y=None, height=200, padding=5)
-        buttons = [
-            '7', '8', '9', '-',
-            '4', '5', '6', '.',
-            '1', '2', '3', '⌫',
-            '0', 'C', '', ''
-        ]
+        buttons = ['7', '8', '9', '-', '4', '5', '6', '.', '1', '2', '3', '⌫', '0', 'C', '', '']
         for btn_text in buttons:
             if btn_text == '':
                 keypad.add_widget(Widget())
@@ -852,7 +735,6 @@ class APZApp(App):
             
         root.add_widget(keypad)
 
-        # تنظیم پیش‌فرض
         self.update_all_screens()
         return root
 
@@ -888,11 +770,8 @@ class APZApp(App):
 
     def apply_theme_to_all(self, theme):
         text_color = (0, 0, 0, 1) if theme == 'light' else (1, 1, 1, 1)
-        
-        # اعمال به همه صفحات (از طریق متد update_theme که در BaseScreen تعریف شده)
         for screen in self.sm.screens:
             screen.update_theme(theme)
-            
         self.title_label.color = text_color
         self.result_label.color = (1, 1, 0, 1) if theme == 'dark' else (0.8, 0.4, 0, 1)
         self.formula_label.color = (0.5, 0.8, 1, 1) if theme == 'dark' else (0, 0.3, 0.8, 1)
@@ -935,7 +814,8 @@ class APZApp(App):
         popup.open()
 
     def next_screen(self, instance):
-        if self.current_screen < 4:
+        # ✅ آپدیت شده برای ۶ صفحه (ایندکس ۰ تا ۵)
+        if self.current_screen < 5:
             self.current_screen += 1
             self.sm.current = self.sm.screen_names[self.current_screen]
 
@@ -951,4 +831,4 @@ class APZApp(App):
 # اجرای برنامه
 # =========================
 if __name__ == '__main__':
-    APZApp().run()        
+    APZApp().run()
